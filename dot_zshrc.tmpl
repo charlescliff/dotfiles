@@ -3,8 +3,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-
-export ZSH="/Users/{{ .chezmoi.username }}/.oh-my-zsh"
+export ZSH="/Users/ychen2/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -72,17 +71,18 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(
-	git
-	macos
+plugins=(git
+	 macos
 	history
 	zsh-autosuggestions
 	sudo
 	web-search
-	copydir
+	copypath
 	copyfile
 	copybuffer
 	dirhistory
+	docker
+	docker-compose
 	jsontools
 	fasd
 	brew
@@ -122,22 +122,29 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+
 export NVM_DIR="$HOME/.nvm"
-#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-NODE_GLOBALS=(`find ~/.nvm/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq`)
-NODE_GLOBALS+=(node nvm yarn)
-
-_load_nvm() {
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+#NODE_GLOBALS=(`find $NVM_DIR/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq`)
+#NODE_GLOBALS+=(node nvm yarn)
+#
+#_load_nvm() {
+#  [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+#  [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+#}
+#
+#for cmd in "${NODE_GLOBALS[@]}"; do
+#  eval "function ${cmd}(){ unset -f ${NODE_GLOBALS[*]}; _load_nvm; unset -f _load_nvm; ${cmd} \$@; }"
+#done
+#unset cmd NODE_GLOBALS
+nvm() {
+  echo "🚨 NVM not loaded! Loading now..."
+  unset -f nvm
+  export NVM_PREFIX=$(brew --prefix nvm)
+  [ -s "$NVM_PREFIX/nvm.sh" ] && . "$NVM_PREFIX/nvm.sh"
+  nvm "$@"
 }
 
-for cmd in "${NODE_GLOBALS[@]}"; do
-eval "function ${cmd}(){ unset -f ${NODE_GLOBALS[*]}; _load_nvm; unset -f _load_nvm; ${cmd} \$@; }"
-done
-unset cmd NODE_GLOBALS
 
 export PATH="$PATH:$HOME/.yarn/bin"
 
@@ -162,5 +169,89 @@ alias k='kubectl'
 export PATH="$PATH:$HOME/.rvm/bin"
 alias mpr='/Users/ychen2/flexport/mpr'
 alias opr='/Users/ychen2/flexport/opr'
-alias dev='fx rdev'
+rdev() {
+    if grep "127.0.0.1\s\+localhost" /etc/hosts > /dev/null; then
+        fx rdev "$@"
+    else
+        echo "\033[0;31mERROR: Your /etc/hosts is missing an entry for '127.0.0.1 localhost'\033[0m"
+    fi
+}
+
+alias dev='rdev'
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/amazon-corretto-11.jdk/Contents/Home
+alias gst='git status -uno'
+alias dk='docker'
+
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/local/bin/terraform terraform
+alias tf='terraform'
+fpath=(~/.zsh/completion $fpath)
+#autoload -Uz compinit ; compinit
+
+# export BUILDKITE_API_TOKEN='21806125254be6bc08c745691c887d1f479207a9'
+export BUILDKITE_API_TOKEN='7bc8bba6fc60b9d9c00092de13762f073dbc615e'
+alias bssh='/Users/ychen2/flexport/env-improvement/bin/bastion ssh'
+alias gcv='git commit --no-verify -m'
+alias gcm='git checkout master'
+gssm() {
+ git status -s | awk '$1 == "M" { print $2 }'
+}
+
+export PATH=$PATH:$(go env GOPATH)/bin
+alias fixpermission='fx rdev exec core --raw -- chown -R app:app /home/app/flexport'
+alias mygco='$HOME/flexport/mygco.sh '
+alias mybuildozer='$HOME/flexport/mybuildozer.sh '
+alias devftsync='dev sync --paths nextjs,migratory_modules,webpack,app,graphql_gateway'
+
+alias fmstg="git diff --name-only --cached  | xargs fx format"
+source ~/.bash_profile
+# eval "$(direnv hook zsh)"
+export DISABLE_NIX_SHELL_WELCOME=1
+export DISABLE_NIX_SHELL_RVM_WARNING=1
+export SAVEHIST=100000
+export HISTSIZE=100000
+
+alias gfm='git fetch origin master'
+alias gmm='git merge origin master'
+
+alias lpg='pg_ctl -D /usr/local/var/postgres'
+alias lpg11='/usr/local/opt/postgresql@11/bin/pg_ctl -D /usr/local/var/postgresql@11'
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+#__conda_setup="$('/Users/ychen2/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+#if [ $? -eq 0 ]; then
+#    eval "$__conda_setup"
+#else
+#    if [ -f "/Users/ychen2/anaconda3/etc/profile.d/conda.sh" ]; then
+#        . "/Users/ychen2/anaconda3/etc/profile.d/conda.sh"
+#    else
+#        export PATH="/Users/ychen2/anaconda3/bin:$PATH"
+#    fi
+#fi
+#unset __conda_setup
+# <<< conda initialize <<<
+
+timezsh() {
+  shell=${1-$SHELL}
+  for i in $(seq 1 4); do /usr/bin/time $shell -i -c exit; done
+}
+
+# On slow systems, checking the cached .zcompdump file to see if it must be 
+# regenerated adds a noticable delay to zsh startup.  This little hack restricts 
+# it to once a day.  It should be pasted into your own completion file.
+#
+# The globbing is a little complicated here:
+# - '#q' is an explicit glob qualifier that makes globbing work within zsh's [[ ]] construct.
+# - 'N' makes the glob pattern evaluate to nothing when it doesn't match (rather than throw a globbing error)
+# - '.' matches "regular files"
+# - 'mh+24' matches files (or directories or whatever) that are older than 24 hours.
+autoload -Uz compinit 
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+	compinit;
+else
+	compinit -C;
+fi;
+
 #zprof
